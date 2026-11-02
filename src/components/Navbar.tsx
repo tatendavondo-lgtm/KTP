@@ -19,7 +19,6 @@ const LINKS = [
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
   const [open, setOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -27,14 +26,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
       document.body.style.overflow = "";
     };
   }, [open]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 40);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const go = (id: string) => {
     setOpen(false);
@@ -51,18 +42,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
 
   return (
     <>
-      <header
-        className={`fixed inset-x-0 top-0 z-50 px-4 sm:px-8 py-3 sm:py-4 transition-all duration-300 ${
-          isScrolled
-            ? "bg-ink/80 backdrop-blur-md shadow-lg shadow-black/20"
-            : "bg-transparent"
-        }`}
-      >
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-50 bg-transparent px-4 py-3.5 sm:px-8 sm:py-5">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          {/* Logo on top-left: completely standalone, NO background, NO frame, NO border lines */}
+          {/* Logo on top-left: completely standalone, floating with zero frame or background */}
           <button
             onClick={() => go("top")}
-            className="flex items-center transition-transform hover:scale-[1.02] focus:outline-none"
+            className="pointer-events-auto flex items-center transition-transform hover:scale-[1.02] focus:outline-none"
             aria-label="Kudzie The Planner - Home"
           >
             <Image
@@ -71,13 +56,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
               width={394}
               height={200}
               priority
-              className="h-10 sm:h-12 md:h-14 w-auto object-contain drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)]"
+              className="h-10 sm:h-12 md:h-14 w-auto object-contain drop-shadow-[0_2px_16px_rgba(0,0,0,0.85)]"
             />
           </button>
 
-          {/* Right-side navigation and actions */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <nav className="glass glass-tint hidden items-center gap-1 rounded-full px-4 py-1.5 text-white lg:flex">
+          {/* Right-side navigation and actions: floating pills */}
+          <div className="pointer-events-auto flex items-center gap-2 sm:gap-3">
+            <nav className="glass glass-tint hidden items-center gap-1 rounded-full px-4 py-1.5 text-white shadow-[0_4px_20px_rgba(0,0,0,0.35)] lg:flex">
               {LINKS.map((l) => (
                 <button
                   key={l.id}
@@ -94,21 +79,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenConsultation }) => {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Chat with Kudzie on WhatsApp"
-              className="glass glass-tint grid h-10 w-10 sm:h-11 sm:w-11 place-items-center rounded-full text-white/90 transition hover:scale-105 hover:text-white"
+              className="glass glass-tint grid h-10 w-10 sm:h-11 sm:w-11 place-items-center rounded-full text-white/90 shadow-[0_4px_20px_rgba(0,0,0,0.35)] transition hover:scale-105 hover:text-white"
             >
               <MessageCircle className="h-[18px] w-[18px]" />
             </a>
 
             <button
               onClick={() => (onOpenConsultation ? onOpenConsultation() : go("inquiry"))}
-              className="hidden sm:inline-flex rounded-full bg-gradient-to-r from-magenta via-[#A30B77] to-violet px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-magenta/25 transition hover:brightness-110"
+              className="hidden sm:inline-flex rounded-full bg-gradient-to-r from-magenta via-[#A30B77] to-violet px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-magenta/30 transition hover:brightness-110"
             >
               Book a consultation
             </button>
 
             <button
               onClick={() => setOpen(true)}
-              className="glass glass-tint grid h-10 w-10 place-items-center rounded-full text-white lg:hidden"
+              className="glass glass-tint grid h-10 w-10 place-items-center rounded-full text-white shadow-[0_4px_20px_rgba(0,0,0,0.35)] lg:hidden"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />

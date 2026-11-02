@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import Image from "next/image";
 import {
   motion,
   useScroll,
   useTransform,
   useSpring,
-  AnimatePresence,
   MotionValue,
-  Variants,
 } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { KTP_BRAND } from "@/data/ktpData";
@@ -139,7 +137,119 @@ function Layer({
       />
       {/* Soft gradient vignettes for legible typography while keeping the photo vibrant */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-44 bg-gradient-to-b from-ink/75 via-ink/20 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-80 bg-gradient-to-t from-ink/85 via-ink/30 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-ink/90 via-ink/35 to-transparent" />
+    </motion.div>
+  );
+}
+
+/* Individual Stage Card - 100% scroll-sensitive:
+   Opacity and Y-offset are transformed directly in real-time by scroll progress.
+   If the user scrolls slow, it moves slow; if they scroll fast, it follows immediately.
+   On mobile, the card is completely transparent with no background box or frame
+   so the high-resolution photography is never obstructed. */
+function StageCard({
+  stage,
+  progress,
+  range,
+  isFirst,
+  isLast,
+  onInquire,
+}: {
+  stage: TourStage;
+  progress: MotionValue<number>;
+  range: number[];
+  isFirst?: boolean;
+  isLast?: boolean;
+  onInquire: (title: string) => void;
+}) {
+  const opacity = useTransform(
+    progress,
+    range,
+    isFirst ? [1, 1, 0] : isLast ? [0, 1, 1] : [0, 1, 1, 0]
+  );
+
+  const y = useTransform(
+    progress,
+    range,
+    isFirst ? [0, 0, -28] : isLast ? [28, 0, 0] : [28, 0, 0, -28]
+  );
+
+  const pointerEvents = useTransform(opacity, (v) => (v > 0.12 ? "auto" : "none"));
+
+  return (
+    <motion.div
+      style={{ opacity, y, pointerEvents }}
+      className="absolute inset-x-0 bottom-0 pointer-events-none will-change-transform"
+    >
+      {/* Mobile: Fully transparent (no background, no border, no blur box)
+          Tablet/Desktop: Refined liquid glass pedestal */}
+      <div className="w-full max-w-xl bg-transparent border-0 shadow-none p-0 sm:glass sm:glass-tint sm:rounded-[32px] sm:p-8 md:p-9 sm:border sm:border-white/20 sm:shadow-[0_30px_70px_-15px_rgba(0,0,0,0.85)] sm:backdrop-blur-2xl text-white">
+        {/* Subtle ambient specular glow (desktop only) */}
+        <div className="pointer-events-none absolute -top-20 -right-20 hidden sm:block h-52 w-52 rounded-full bg-gradient-to-br from-magenta/25 via-violet/15 to-transparent blur-3xl" />
+
+        {/* Minimalist Category Badge - zero numbering */}
+        <div className="mb-2 sm:mb-4 flex items-center gap-2">
+          <span className="h-1.5 w-1.5 rounded-full bg-magenta shadow-[0_0_8px_#E6007E]" />
+          <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.28em] text-white/90 [text-shadow:0_1px_8px_rgba(0,0,0,0.9)]">
+            {isFirst ? KTP_BRAND.tagline : stage.name}
+          </span>
+        </div>
+
+        {/* High-Contrast Editorial Serif Headline */}
+        <h2
+          className={`font-serif leading-[1.06] text-white tracking-tight [text-shadow:0_2px_14px_rgba(0,0,0,0.95)] ${
+            isFirst
+              ? "text-2xl sm:text-3xl md:text-[2.6rem]"
+              : "text-[1.85rem] sm:text-4xl md:text-[3.2rem]"
+          }`}
+        >
+          {stage.title}
+        </h2>
+
+        {/* Narrative description */}
+        <p className="mt-2 sm:mt-4 text-[13.5px] sm:text-[15.5px] leading-relaxed text-white/90 [text-shadow:0_1px_8px_rgba(0,0,0,0.9)] max-w-lg line-clamp-2 sm:line-clamp-none">
+          {stage.body}
+        </p>
+
+        {/* Handled aspects: Compact pills on mobile, luxury hairlines on desktop */}
+        <div className="mt-3 sm:mt-5">
+          {/* Mobile: horizontal compact badges */}
+          <div className="flex flex-wrap gap-1.5 sm:hidden">
+            {stage.handled.map((h) => (
+              <span
+                key={h}
+                className="rounded-full bg-black/40 border border-white/15 px-2.5 py-0.5 text-[10px] font-normal text-white/90 backdrop-blur-md shadow-sm"
+              >
+                {h}
+              </span>
+            ))}
+          </div>
+
+          {/* Tablet & Desktop: luxury hairline dividers */}
+          <ul className="hidden sm:block divide-y divide-white/10 border-y border-white/10 text-xs sm:text-sm text-white/85">
+            {stage.handled.map((h) => (
+              <li
+                key={h}
+                className="py-2.5 sm:py-3 flex items-center justify-between"
+              >
+                <span>{h}</span>
+                <span className="h-1 w-1 rounded-full bg-white/40" />
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Primary Call to Action */}
+        <div className="mt-3.5 sm:mt-6">
+          <button
+            onClick={() => onInquire(stage.title)}
+            className="group pointer-events-auto inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-gradient-to-r from-magenta via-[#A30B77] to-violet px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-white shadow-xl shadow-magenta/30 transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
+          >
+            Plan an event like this
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </button>
+        </div>
+      </div>
     </motion.div>
   );
 }
@@ -148,191 +258,91 @@ export const ParallaxScrollytelling: React.FC<ParallaxScrollytellingProps> = ({
   onInquireStage,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
 
-  // Silky, cushioned spring physics: lower stiffness & tuned damping eliminate harsh wheel jumps
+  // Responsive spring physics: high stiffness & low mass respond instantly to user scroll speed
   const smooth = useSpring(scrollYProgress, {
-    stiffness: 32,
-    damping: 24,
-    mass: 0.9,
-    restDelta: 0.0003,
+    stiffness: 180,
+    damping: 30,
+    mass: 0.15,
+    restDelta: 0.0001,
   });
 
-  useEffect(() => {
-    return smooth.on("change", (v) => {
-      // Transition thresholds aligned with the midpoint of each stage's cross-dissolve
-      setActive(v < 0.26 ? 0 : v < 0.56 ? 1 : v < 0.84 ? 2 : 3);
-    });
-  }, [smooth]);
-
-  const stage = TOUR_STAGES[active];
-
-  const LUXURY_EASE = [0.16, 1, 0.3, 1] as const;
-
-  // Motion variants for dramatic, staggered card entrance
-  const cardVariants: Variants = {
-    hidden: {
-      opacity: 0,
-      y: 45,
-      scale: 0.93,
-      filter: "blur(14px)",
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      filter: "blur(0px)",
-      transition: {
-        duration: 0.7,
-        ease: LUXURY_EASE,
-        staggerChildren: 0.08,
-        delayChildren: 0.06,
-      },
-    },
-    exit: {
-      opacity: 0,
-      y: -28,
-      scale: 0.96,
-      filter: "blur(10px)",
-      transition: {
-        duration: 0.42,
-        ease: LUXURY_EASE,
-      },
-    },
-  };
-
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 12 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.45, ease: LUXURY_EASE },
-    },
+  // Balanced transition ranges across the scroll journey
+  const ranges = {
+    stage0: [0.00, 0.16, 0.28],
+    stage1: [0.18, 0.28, 0.46, 0.58],
+    stage2: [0.48, 0.58, 0.76, 0.88],
+    stage3: [0.78, 0.88, 1.00],
   };
 
   return (
-    <section ref={containerRef} className="relative h-[680vh] bg-ink">
+    <section ref={containerRef} className="relative h-[480vh] bg-ink">
       <div className="sticky top-0 h-[100dvh] w-full overflow-hidden">
-        {/* 3D perspective stage with wide, overlapping cross-fade intervals */}
+        {/* 3D perspective stage with scroll-sensitive cross-dissolve intervals */}
         <div className="perspective-1200 preserve-3d absolute inset-0">
           <Layer
             progress={smooth}
             stage={TOUR_STAGES[0]}
             kind="first"
-            range={[0, 0.20, 0.38]}
+            range={ranges.stage0}
             priority
           />
           <Layer
             progress={smooth}
             stage={TOUR_STAGES[1]}
             kind="middle"
-            range={[0.18, 0.32, 0.50, 0.66]}
+            range={ranges.stage1}
             priority
           />
           <Layer
             progress={smooth}
             stage={TOUR_STAGES[2]}
             kind="middle"
-            range={[0.48, 0.62, 0.78, 0.92]}
+            range={ranges.stage2}
           />
           <Layer
             progress={smooth}
             stage={TOUR_STAGES[3]}
             kind="last"
-            range={[0.76, 0.90, 1.0]}
+            range={ranges.stage3}
           />
         </div>
 
-        {/* Minimalist Scene Presentation - Mobile-First, Responsive, Dramatic Entrance */}
+        {/* 100% Scroll-Sensitive Cards - Float dynamically without any timer lag */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-4 pb-6 sm:p-10 sm:pb-12 md:p-14">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={stage.id}
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="glass glass-tint pointer-events-auto relative w-full max-w-xl overflow-hidden rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 md:p-9 text-white backdrop-blur-2xl border border-white/20 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.85)]"
-            >
-              {/* Subtle ambient specular glow inside the card */}
-              <div className="pointer-events-none absolute -top-20 -right-20 h-52 w-52 rounded-full bg-gradient-to-br from-magenta/25 via-violet/15 to-transparent blur-3xl" />
-
-              {/* Minimalist Category Badge - zero numbering */}
-              <motion.div
-                variants={itemVariants}
-                className="mb-2.5 sm:mb-4 flex items-center gap-2.5"
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-magenta shadow-[0_0_8px_#E6007E]" />
-                <span className="text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.28em] text-white/75">
-                  {active === 0 ? KTP_BRAND.tagline : stage.name}
-                </span>
-              </motion.div>
-
-              {/* High-Contrast Editorial Serif Headline - Scaled proportionally for mobile */}
-              <motion.h2
-                variants={itemVariants}
-                className={`font-serif leading-[1.06] text-white tracking-tight ${
-                  active === 0
-                    ? "text-2xl sm:text-3xl md:text-[2.6rem]"
-                    : "text-[1.75rem] sm:text-4xl md:text-[3.2rem]"
-                }`}
-              >
-                {stage.title}
-              </motion.h2>
-
-              {/* Narrative description */}
-              <motion.p
-                variants={itemVariants}
-                className="mt-2.5 sm:mt-4 text-[13.5px] sm:text-[15.5px] leading-relaxed text-white/80 max-w-lg"
-              >
-                {stage.body}
-              </motion.p>
-
-              {/* Handled aspects: Compact pills on mobile, hairline list on tablet/desktop */}
-              <motion.div variants={itemVariants} className="mt-3.5 sm:mt-5">
-                {/* Mobile: horizontal compact badges so the photography remains visible */}
-                <div className="flex flex-wrap gap-1.5 sm:hidden">
-                  {stage.handled.map((h) => (
-                    <span
-                      key={h}
-                      className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-normal text-white/85 backdrop-blur-sm"
-                    >
-                      {h}
-                    </span>
-                  ))}
-                </div>
-
-                {/* Tablet & Desktop: luxury hairline dividers */}
-                <ul className="hidden sm:block divide-y divide-white/10 border-y border-white/10 text-xs sm:text-sm text-white/85">
-                  {stage.handled.map((h) => (
-                    <li
-                      key={h}
-                      className="py-2.5 sm:py-3 flex items-center justify-between"
-                    >
-                      <span>{h}</span>
-                      <span className="h-1 w-1 rounded-full bg-white/40" />
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-
-              {/* Primary Call to Action: thumb-friendly full-width on mobile */}
-              <motion.div variants={itemVariants} className="mt-4 sm:mt-6">
-                <button
-                  onClick={() => onInquireStage(stage.title)}
-                  className="group inline-flex w-full sm:w-auto items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-magenta via-[#A30B77] to-violet px-6 py-3 text-xs sm:text-sm font-medium text-white shadow-xl shadow-magenta/25 transition-all duration-300 hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
-                >
-                  Plan an event like this
-                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                </button>
-              </motion.div>
-            </motion.div>
-          </AnimatePresence>
+          <div className="relative w-full max-w-xl min-h-[220px] sm:min-h-[380px]">
+            <StageCard
+              stage={TOUR_STAGES[0]}
+              progress={smooth}
+              range={ranges.stage0}
+              isFirst
+              onInquire={onInquireStage}
+            />
+            <StageCard
+              stage={TOUR_STAGES[1]}
+              progress={smooth}
+              range={ranges.stage1}
+              onInquire={onInquireStage}
+            />
+            <StageCard
+              stage={TOUR_STAGES[2]}
+              progress={smooth}
+              range={ranges.stage2}
+              onInquire={onInquireStage}
+            />
+            <StageCard
+              stage={TOUR_STAGES[3]}
+              progress={smooth}
+              range={ranges.stage3}
+              isLast
+              onInquire={onInquireStage}
+            />
+          </div>
         </div>
       </div>
     </section>
