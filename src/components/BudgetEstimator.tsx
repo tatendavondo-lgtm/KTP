@@ -156,14 +156,28 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({ onSendScopeToF
             </fieldset>
 
             <div>
-              <div className="flex items-end justify-between">
-                <label htmlFor="guests" className="text-xs uppercase tracking-[0.22em] text-white/60">
-                  Guests
-                </label>
-                <span className="font-serif text-5xl leading-none">
-                  {guests >= 600 ? "600+" : guests}
-                </span>
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <label htmlFor="guests" className="block text-[11px] uppercase tracking-[0.22em] text-white/60">
+                    Guest Count
+                  </label>
+                  <div className="mt-1 font-serif text-3xl sm:text-5xl leading-none">
+                    {guests >= 600 ? "600+" : guests}
+                    <span className="ml-1.5 text-xs sm:text-sm font-sans text-white/50">guests</span>
+                  </div>
+                </div>
+
+                {/* Real-time price badge directly above the slider */}
+                <div className="text-right">
+                  <span className="block text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-white/60">
+                    Estimated Planning Fee
+                  </span>
+                  <div className="mt-1 font-serif text-2xl sm:text-4xl leading-none text-[#FF5CB3] [text-shadow:0_0_20px_rgba(255,92,179,0.35)]">
+                    {result.estimatedFeeRangeUSD}
+                  </div>
+                </div>
               </div>
+
               <input
                 id="guests"
                 type="range"
@@ -176,8 +190,8 @@ export const BudgetEstimator: React.FC<BudgetEstimatorProps> = ({ onSendScopeToF
                 style={{ ["--fill" as string]: fill }}
               />
               <div className="mt-3 flex justify-between text-xs text-white/50">
-                <span>20</span>
-                <span>600+</span>
+                <span>20 guests</span>
+                <span>600+ guests</span>
               </div>
             </div>
 
