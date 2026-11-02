@@ -44,17 +44,18 @@ export const AboutKudzie: React.FC = () => {
           </div>
         </div>
 
-        {/* Portrait, deliberately offset */}
-        <div className="lg:col-span-5 lg:col-start-8">
+        {/* Portrait / Action photograph */}
+        <div className="lg:col-span-6 lg:col-start-7 lg:pt-6">
           <div className="relative">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] shadow-[0_40px_80px_-30px_rgba(59,10,104,0.5)]">
+            <div className="relative aspect-[4/3] sm:aspect-[14/11] overflow-hidden rounded-[2rem] shadow-[0_40px_80px_-30px_rgba(59,10,104,0.35)]">
               <Image
                 src="/kudzie/ktp.jpg"
-                alt="Kudzie styling a floral centrepiece"
+                alt="Kudzie styling a luxury floral centerpiece"
                 fill
                 quality={95}
-                sizes="(max-width: 1024px) 100vw, 40vw"
-                className="object-cover object-top"
+                priority
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover object-[55%_center]"
               />
             </div>
             <div className="absolute -bottom-6 -left-4 hidden rounded-2xl bg-ink px-5 py-4 text-white shadow-xl sm:block">
